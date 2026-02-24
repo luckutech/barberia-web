@@ -1,16 +1,9 @@
-// === CONFIG ===
+// === HORARIO NEGOCIO ===
 const OPEN_HH = 10;
 const CLOSE_HH = 20;
 const SLOT_MIN = 15;
 
-// Simulación de ocupados (luego esto vendrá del backend)
-const SIMULATED_BUSY = [
-  { start: "11:00", end: "11:45" },
-  { start: "13:30", end: "14:30" },
-  { start: "17:15", end: "18:00" },
-];
-
-// Servicios (luego vendrán del backend)
+// === SERVICIOS (random realistas) ===
 const SERVICES = [
   { id: "svc1", name: "Corte Clásico", minutes: 45 },
   { id: "svc2", name: "Fade / Degradado", minutes: 60 },
@@ -20,19 +13,27 @@ const SERVICES = [
   { id: "svc6", name: "Limpieza Facial", minutes: 30 },
 ];
 
+// === ESTILISTAS (ejemplo) ===
 const STYLISTS = [
   { id: "any", name: "Cualquiera disponible" },
-  { id: "st1", name: "Alejandro" },
-  { id: "st2", name: "Mateo" },
-  { id: "st3", name: "Diego" },
-  { id: "st4", name: "Sebastián" },
+  { id: "st1", name: "Carlos" },
+  { id: "st2", name: "Raul" },
+  { id: "st3", name: "Omar" },
+  { id: "st4", name: "Tovar" },
 ];
 
-// === STATE ===
+// === SIMULACIÓN DE OCUPADOS (por día) ===
+// Luego esto vendrá del backend: availability
+const SIMULATED_BUSY = [
+  { start: "11:00", end: "11:45" },
+  { start: "13:30", end: "14:30" },
+  { start: "17:15", end: "18:00" },
+];
+
 let selectedTime = null;
 
-// === HELPERS ===
-function pad(n) { return String(n).padStart(2, "0"); }
+// ---- helpers ----
+const pad = (n) => String(n).padStart(2, "0");
 
 function timeToMinutes(hhmm) {
   const [h, m] = hhmm.split(":").map(Number);
@@ -54,19 +55,7 @@ function buildSlots() {
 }
 
 function overlaps(aStart, aEnd, bStart, bEnd) {
-  // [start,end)
-  return aStart < bEnd && aEnd > bStart;
-}
-
-function isBusySlot(slotStart, durationMin) {
-  const s = timeToMinutes(slotStart);
-  const e = s + durationMin;
-
-  return SIMULATED_BUSY.some(b => {
-    const bs = timeToMinutes(b.start);
-    const be = timeToMinutes(b.end);
-    return overlaps(s, e, bs, be);
-  });
+  return aStart < bEnd && aEnd > bStart; // [start,end)
 }
 
 function fitsInBusinessHours(slotStart, durationMin) {
@@ -75,12 +64,29 @@ function fitsInBusinessHours(slotStart, durationMin) {
   return e <= CLOSE_HH * 60;
 }
 
+function isBusy(slotStart, durationMin) {
+  const s = timeToMinutes(slotStart);
+  const e = s + durationMin;
+  return SIMULATED_BUSY.some(b => {
+    const bs = timeToMinutes(b.start);
+    const be = timeToMinutes(b.end);
+    return overlaps(s, e, bs, be);
+  });
+}
+
 function getSelectedService() {
   const id = document.getElementById("service").value;
   return SERVICES.find(s => s.id === id) || SERVICES[0];
 }
 
-// === UI RENDER ===
+function clearSelection() {
+  selectedTime = null;
+  document.getElementById("confirm").disabled = true;
+  document.getElementById("slotHint").textContent = "Selecciona un horario para continuar.";
+  document.getElementById("result").textContent = "";
+}
+
+// ---- render catalog ----
 function renderCatalog() {
   const serviceSel = document.getElementById("service");
   serviceSel.innerHTML = "";
@@ -101,12 +107,7 @@ function renderCatalog() {
   });
 }
 
-function clearSelection() {
-  selectedTime = null;
-  document.getElementById("confirm").disabled = true;
-  document.getElementById("slotHint").textContent = "Selecciona un horario para continuar.";
-}
-
+// ---- render slots ----
 function renderCalendarGrid() {
   clearSelection();
 
@@ -114,21 +115,24 @@ function renderCalendarGrid() {
   const grid = document.getElementById("calendarGrid");
   grid.innerHTML = "";
 
+  const service = getSelectedService();
+  document.getElementById("durationPill").textContent = `Duración: ${service.minutes} min`;
+
   if (!dateISO) {
     grid.innerHTML = `<div class="empty">Selecciona un día para ver horarios.</div>`;
     return;
   }
 
-  const service = getSelectedService();
   const slots = buildSlots();
 
   slots.forEach(hhmm => {
     const btn = document.createElement("button");
+    btn.type = "button";
     btn.className = "slot";
     btn.textContent = hhmm;
 
     const okHours = fitsInBusinessHours(hhmm, service.minutes);
-    const busy = isBusySlot(hhmm, service.minutes);
+    const busy = okHours ? isBusy(hhmm, service.minutes) : false;
 
     if (!okHours) {
       btn.classList.add("disabled");
@@ -141,7 +145,6 @@ function renderCalendarGrid() {
     } else {
       btn.classList.add("free");
       btn.onclick = () => {
-        // Unselect others
         document.querySelectorAll(".slot.selected").forEach(x => x.classList.remove("selected"));
         btn.classList.add("selected");
         selectedTime = hhmm;
@@ -155,49 +158,48 @@ function renderCalendarGrid() {
   });
 }
 
-// === CONFIRM ===
+// ---- WhatsApp link (confirmación manual 1 click) ----
 function buildWhatsAppLink(phoneE164, message) {
-  // wa.me needs digits only
   const digits = phoneE164.replace(/[^\d]/g, "");
   const text = encodeURIComponent(message);
   return `https://wa.me/${digits}?text=${text}`;
 }
 
-async function confirmBooking() {
+function confirmBooking() {
   const name = document.getElementById("name").value.trim();
-  const phoneE164 = document.getElementById("phone").value.trim();
+  const phone = document.getElementById("phone").value.trim();
   const dateISO = document.getElementById("date").value;
-  const stylist = document.getElementById("stylist").selectedOptions[0].textContent;
+
+  const stylistName = document.getElementById("stylist").selectedOptions[0].textContent;
   const service = getSelectedService();
 
-  if (!name || !phoneE164 || !dateISO || !selectedTime) {
-    alert("Completa nombre, teléfono, día y selecciona un horario.");
+  if (!name || !phone || !dateISO || !selectedTime) {
+    alert("Completa nombre, número, día y selecciona un horario.");
     return;
   }
 
-  // MVP sin backend: solo muestra link de confirmación por WhatsApp (1 click)
   const msg =
     `Hola ${name} 👋\n` +
     `Tu cita en *Barbería* está registrada:\n` +
     `📅 ${dateISO}\n` +
     `🕒 ${selectedTime}\n` +
     `✂️ ${service.name} (${service.minutes} min)\n` +
-    `💈 Estilista: ${stylist}\n\n` +
-    `Si necesitas cambiarla, responde a este mensaje.`;
+    `💈 Estilista: ${stylistName}\n\n` +
+    `Responde a este mensaje si necesitas cambiarla.`;
 
-  const link = buildWhatsAppLink(phoneE164, msg);
+  const link = buildWhatsAppLink(phone, msg);
 
   document.getElementById("result").innerHTML =
     `✅ Cita registrada (demo).<br><br>` +
-    `👉 <a href="${link}" target="_blank">Abrir WhatsApp con confirmación</a>`;
+    `👉 <a href="${link}" target="_blank" rel="noopener">Abrir WhatsApp con confirmación</a>`;
 }
 
-// === EVENTS ===
+// ---- events ----
 document.getElementById("confirm").addEventListener("click", confirmBooking);
 document.getElementById("date").addEventListener("change", renderCalendarGrid);
 document.getElementById("service").addEventListener("change", renderCalendarGrid);
 document.getElementById("stylist").addEventListener("change", renderCalendarGrid);
 
-// Init
+// init
 renderCatalog();
 renderCalendarGrid();
