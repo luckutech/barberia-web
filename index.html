@@ -6,32 +6,39 @@
   <title>Barbería | Agendar</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
+
 <body>
   <main class="card">
     <h1>Agendar cita</h1>
 
-    <label>Servicio</label>
+    <!-- Servicio -->
+    <label for="service">Servicio</label>
     <select id="service"></select>
 
-    <label>Estilista</label>
+    <!-- Estilista -->
+    <label for="stylist">Estilista</label>
     <select id="stylist"></select>
 
-    <label>Día</label>
+    <!-- Día -->
+    <label for="date">Día</label>
     <input id="date" type="date" />
 
-<button id="confirm" class="primary" disabled>Confirmar cita</button>
+    <!-- Calendario de slots -->
+    <label>Horarios disponibles</label>
+    <div id="calendarGrid" class="calendar-grid"></div>
+    <p class="hint" id="slotHint">Selecciona un horario para continuar.</p>
 
-    <div id="times"></div>
+    <hr style="margin:18px 0; border:0; border-top:1px solid #2b2b2b;" />
 
-    <hr />
+    <!-- Datos del cliente -->
+    <label for="name">Nombre</label>
+    <input id="name" placeholder="Tu nombre" autocomplete="name" />
 
-    <label>Nombre</label>
-    <input id="name" placeholder="Tu nombre" />
+    <label for="phone">Número (E.164)</label>
+    <input id="phone" placeholder="+5255..." autocomplete="tel" />
 
-    <label>Número (E.164)</label>
-    <input id="phone" placeholder="+5255..." />
-
-    <button id="confirm" disabled>Confirmar</button>
+    <!-- Confirmar -->
+    <button id="confirm" class="primary" disabled>Confirmar cita</button>
 
     <p id="result"></p>
   </main>
