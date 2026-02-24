@@ -8,39 +8,66 @@
 </head>
 
 <body>
-  <main class="card">
-    <h1>Agendar cita</h1>
+  <main class="shell">
+    <section class="card">
+      <header class="header">
+        <img class="logo" src="./logo.png" alt="Barbershop Logo" />
+        <h1>Agendar cita</h1>
+        <p class="sub">Elige servicio, estilista, día y selecciona un horario disponible.</p>
+      </header>
 
-    <!-- Servicio -->
-    <label for="service">Servicio</label>
-    <select id="service"></select>
+      <div class="form-grid">
+        <div class="field">
+          <label for="service">Servicio</label>
+          <select id="service"></select>
+        </div>
 
-    <!-- Estilista -->
-    <label for="stylist">Estilista</label>
-    <select id="stylist"></select>
+        <div class="field">
+          <label for="stylist">Estilista</label>
+          <select id="stylist"></select>
+        </div>
 
-    <!-- Día -->
-    <label for="date">Día</label>
-    <input id="date" type="date" />
+        <div class="field full">
+          <label for="date">Día</label>
+          <input id="date" type="date" />
+        </div>
+      </div>
 
-    <!-- Calendario de slots -->
-    <label>Horarios disponibles</label>
-    <div id="calendarGrid" class="calendar-grid"></div>
-    <p class="hint" id="slotHint">Selecciona un horario para continuar.</p>
+      <section class="slots-section">
+        <div class="slots-head">
+          <h2>Horarios</h2>
+          <span class="pill" id="durationPill">Duración: —</span>
+        </div>
 
-    <hr style="margin:18px 0; border:0; border-top:1px solid #2b2b2b;" />
+        <div id="calendarGrid" class="calendar-grid"></div>
+        <p class="hint" id="slotHint">Selecciona un horario para continuar.</p>
+      </section>
 
-    <!-- Datos del cliente -->
-    <label for="name">Nombre</label>
-    <input id="name" placeholder="Tu nombre" autocomplete="name" />
+      <hr class="divider" />
 
-    <label for="phone">Número (E.164)</label>
-    <input id="phone" placeholder="+5255..." autocomplete="tel" />
+      <section class="client">
+        <h2>Datos del cliente</h2>
 
-    <!-- Confirmar -->
-    <button id="confirm" class="primary" disabled>Confirmar cita</button>
+        <div class="form-grid">
+          <div class="field">
+            <label for="name">Nombre</label>
+            <input id="name" placeholder="Tu nombre" autocomplete="name" />
+          </div>
 
-    <p id="result"></p>
+          <div class="field">
+            <label for="phone">Número (E.164)</label>
+            <input id="phone" placeholder="+5255..." autocomplete="tel" />
+          </div>
+        </div>
+
+        <button id="confirm" class="btn primary" disabled>Confirmar cita</button>
+        <p id="result" class="result"></p>
+      </section>
+    </section>
+
+    <footer class="footer">
+      <small>© Barbería • Reservas en línea</small>
+    </footer>
   </main>
 
   <script src="./app.js"></script>
