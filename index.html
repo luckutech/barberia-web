@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Barbería | Agendar</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="card">
+    <h1>Agendar cita</h1>
+
+    <label>Servicio</label>
+    <select id="service"></select>
+
+    <label>Estilista</label>
+    <select id="stylist"></select>
+
+    <label>Día</label>
+    <input id="date" type="date" />
+
+    <button id="load">Ver horarios</button>
+
+    <div id="times"></div>
+
+    <hr />
+
+    <label>Nombre</label>
+    <input id="name" placeholder="Tu nombre" />
+
+    <label>Número (E.164)</label>
+    <input id="phone" placeholder="+5255..." />
+
+    <button id="confirm" disabled>Confirmar</button>
+
+    <p id="result"></p>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
